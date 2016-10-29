@@ -14,15 +14,15 @@ def sha256(filepath):
     return hash_sha256.hexdigest()
 
 
-def look_for_duplicates(rootdir):
-    for dirName, subdirList, fileList in os.walk(rootDir):
-        print('Scanning %s...' % dirName)
-        for fname in fileList:
-            hash_sha256 = sha256(os.path.join(dirName, fname))
+def look_for_duplicates(root_dir):
+    for dir_name, subdir_list, file_list in os.walk(root_dir):
+        print('Scanning %s...' % dir_name)
+        for fname in file_list:
+            hash_sha256 = sha256(os.path.join(dir_name, fname))
             if hash_sha256 in duplicates:
-                duplicates[hash_sha256].append(os.path.join(dirName, fname))
+                duplicates[hash_sha256].append(os.path.join(dir_name, fname))
             else:
-                duplicates[hash_sha256] = [os.path.join(dirName, fname)]
+                duplicates[hash_sha256] = [os.path.join(dir_name, fname)]
 
 
 def print_duplicates():
@@ -40,8 +40,8 @@ def print_duplicates():
 
 if __name__ == '__main__':
     print('Enter the existing root directory:')
-    rootDir = ''
-    while rootDir == '':
-        rootDir = input()
-    look_for_duplicates(rootDir)
+    root_dir = ''
+    while root_dir == '':
+        root_dir = input()
+    look_for_duplicates(root_dir)
     print_duplicates()
