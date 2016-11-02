@@ -1,6 +1,7 @@
 import os
 import hashlib
 import sys
+import datetime
 
 files = {}
 duplicates = {}
@@ -25,23 +26,29 @@ def look_for_duplicates(root_dir):
                 duplicates[hash_sha256] = [os.path.join(dir_name, fname)]
 
 
+def log_it(string, *, mode='a'):
+    with open('LOGFILE', mode) as logfile:
+        logfile.write(' %s\n' % string)
+    return string
+
+
 def print_duplicates():
     dups = list(filter(lambda entry: len(entry) > 1, duplicates.values()))
     if len(dups) == 0:
-        print('No duplicates found!')
+        print(log_it('No duplicates found!'))
         sys.exit()
     for paths in dups:
-        print('-----------------------')
-        print('These files are duplicates:')
+        print(log_it('-----------------------'))
+        print(log_it('These files are duplicates:'))
         for path in paths:
-            print(path)
-    print('Done!')
+            print(log_it(path))
+    print(log_it('Done!'))
 
 
 if __name__ == '__main__':
-    print('Enter the existing root directory:')
-    root_dir = ''
-    while root_dir == '':
-        root_dir = input()
+    root_dir = input('Enter the existing root directory:\n=> ')
+    while not os.path.isdir(root_dir):
+        root_dir = input('Oops! Looks like there is no such directory! Enter the existing root directory:\n=> ')
+    log_it('%s ======> %s.' % (datetime.datetime.now(), root_dir))
     look_for_duplicates(root_dir)
     print_duplicates()
