@@ -2,9 +2,22 @@ import os
 import hashlib
 import sys
 import datetime
+import argparse
+import logging
 
-files = {}
-duplicates = {}
+
+def parse_args():
+    parser = argparse.ArgumentParser(description='The script is designed for locating all duplicates of files'
+                                                 'in the given directory.')
+    parser.add_argument('-l', '--logfile', default=None,
+                        help='The log file with found dups.')
+    parser.add_argument('-bl', '--blacklist', default='./password_list', help='The local location of the blacklist'
+                                                                              'with passwords.')
+    return parser.parse_args()
+
+
+def path_join(dir, file):
+    return os.path.join(dir, file)
 
 
 def sha256(filepath):
@@ -15,40 +28,48 @@ def sha256(filepath):
     return hash_sha256.hexdigest()
 
 
-def look_for_duplicates(root_dir):
+def find_dups(root_dir):
+    hash_list = {}
     for dir_name, subdir_list, file_list in os.walk(root_dir):
         print('Scanning %s...' % dir_name)
         for fname in file_list:
-            hash_sha256 = sha256(os.path.join(dir_name, fname))
-            if hash_sha256 in duplicates:
-                duplicates[hash_sha256].append(os.path.join(dir_name, fname))
+            fpath = os.path.join(dir_name, fname)
+            hash_sha256 = sha256(fpath)
+            if hash_sha256 in hash_list:
+                hash_list[hash_sha256].append(fpath)
             else:
-                duplicates[hash_sha256] = [os.path.join(dir_name, fname)]
-
-
-def log_it(string, *, mode='a'):
-    with open('LOGFILE', mode) as logfile:
-        logfile.write(' %s\n' % string)
-    return string
-
-
-def print_duplicates():
-    dups = list(filter(lambda entry: len(entry) > 1, duplicates.values()))
-    if len(dups) == 0:
-        print(log_it('No duplicates found!'))
-        sys.exit()
-    for paths in dups:
-        print(log_it('-----------------------'))
-        print(log_it('These files are duplicates:'))
-        for path in paths:
-            print(log_it(path))
-    print(log_it('Done!'))
+                hash_list[hash_sha256] = [fpath]
+    return list(filter(lambda entry: len(entry) > 1, hash_list.values()))
 
 
 if __name__ == '__main__':
+    args = parse_args()
+    if args.logfile:
+        logging.basicConfig(level=logging.DEBUG,
+                            format='%(asctime)s %(message)s',
+                            datefmt='%m-%d %H:%M',
+                            filename=args.logfile,
+                            filemode='w')
+    else:
+        logging.basicConfig(level=logging.INFO,
+                            format='%(asctime)s %(message)s',
+                            datefmt='%m-%d %H:%M')
+    console = logging.StreamHandler()
+    console.setLevel(logging.INFO)
+    logging.getLogger('').addHandler(console)
     root_dir = input('Enter the existing root directory:\n=> ')
     while not os.path.isdir(root_dir):
         root_dir = input('Oops! Looks like there is no such directory! Enter the existing root directory:\n=> ')
-    log_it('%s ======> %s.' % (datetime.datetime.now(), root_dir))
-    look_for_duplicates(root_dir)
-    print_duplicates()
+    logging.info('%s ======> %s.' % (datetime.datetime.now(), root_dir))
+    if args.logfile:
+        print('Writing down to %s', args.logfile)
+    dups = find_dups(root_dir)
+    if dups is None:
+        logging.info('No duplicates found!')
+        sys.exit()
+    for paths in dups:
+        logging.info('-----------------------')
+        logging.info('These files are duplicates:')
+        for path in paths:
+            logging.info(path)
+    logging.info('Done!')
