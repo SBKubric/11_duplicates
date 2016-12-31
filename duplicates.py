@@ -42,8 +42,7 @@ def find_dups(root_dir):
     return list(filter(lambda entry: len(entry) > 1, hash_list.values()))
 
 
-if __name__ == '__main__':
-    args = parse_args()
+def configure_logging(args):
     if args.logfile:
         logging.basicConfig(level=logging.DEBUG,
                             format='%(asctime)s %(message)s',
@@ -57,13 +56,12 @@ if __name__ == '__main__':
     console = logging.StreamHandler()
     console.setLevel(logging.INFO)
     logging.getLogger('').addHandler(console)
-    root_dir = input('Enter the existing root directory:\n=> ')
-    while not os.path.isdir(root_dir):
-        root_dir = input('Oops! Looks like there is no such directory! Enter the existing root directory:\n=> ')
-    logging.info('%s ======> %s.' % (datetime.datetime.now(), root_dir))
+
+
+def log_duplicates(dups, args):
+    logging.info('At %s scanned %s.' % (datetime.datetime.now(), root_dir))
     if args.logfile:
         print('Writing down to %s', args.logfile)
-    dups = find_dups(root_dir)
     if dups is None:
         logging.info('No duplicates found!')
         sys.exit()
@@ -73,3 +71,14 @@ if __name__ == '__main__':
         for path in paths:
             logging.info(path)
     logging.info('Done!')
+
+
+if __name__ == '__main__':
+    args = parse_args()
+    configure_logging(args)
+    root_dir = input('Enter the existing root directory:\n=> ')
+    while not os.path.isdir(root_dir):
+        root_dir = input('Oops! Looks like there is no such directory! Enter the existing root directory:\n=> ')
+    dups = find_dups(root_dir)
+    log_duplicates(dups, args)
+
