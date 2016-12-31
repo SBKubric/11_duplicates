@@ -31,7 +31,6 @@ def sha256(filepath):
 def find_dups(root_dir):
     hash_list = {}
     for dir_name, subdir_list, file_list in os.walk(root_dir):
-        print('Scanning %s...' % dir_name)
         for fname in file_list:
             fpath = os.path.join(dir_name, fname)
             hash_sha256 = sha256(fpath)
