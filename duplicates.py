@@ -37,17 +37,12 @@ def find_dups(root_dir):
 def configure_logging(args):
     if args.logfile:
         logging.basicConfig(level=logging.DEBUG,
-                            format='%(asctime)s %(message)s',
-                            datefmt='%m-%d %H:%M',
+                            format='%(message)s',
                             filename=args.logfile,
                             filemode='w')
     else:
-        logging.basicConfig(level=logging.INFO,
-                            format='%(asctime)s %(message)s',
-                            datefmt='%m-%d %H:%M')
-    console = logging.StreamHandler()
-    console.setLevel(logging.INFO)
-    logging.getLogger('').addHandler(console)
+        logging.basicConfig(level=logging.DEBUG,
+                            format='%(message)s')
 
 
 def log_duplicates(dups, args):
@@ -58,8 +53,7 @@ def log_duplicates(dups, args):
         logging.info('No duplicates found!')
         return None
     for paths in dups:
-        logging.info('-----------------------')
-        logging.info('These files are duplicates:')
+        logging.info('\n\nThese files are duplicates:')
         for path in paths:
             logging.info(path)
 
@@ -70,6 +64,7 @@ if __name__ == '__main__':
     root_dir = input('Enter the existing root directory:\n=> ')
     while not os.path.isdir(root_dir):
         root_dir = input('Oops! Looks like there is no such directory! Enter the existing root directory:\n=> ')
+    print('Scanning the directory...')
     dups = find_dups(root_dir)
     log_duplicates(dups, args)
 
