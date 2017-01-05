@@ -16,22 +16,22 @@ def parse_args():
     return parser.parse_args()
 
 
-def sha256(filepath):
+def get_file_hash(filepath):
     hash_sha256 = hashlib.sha256()
-    with open(filepath, "rb") as file:
-        for chunk in iter(lambda: file.read(4096), b""):
+    with open(filepath, "rb") as source_file:
+        for chunk in iter(lambda: source_file.read(4096), b""):
             hash_sha256.update(chunk)
     return hash_sha256.hexdigest()
 
 
 def find_dups(root_dir):
-    hash_list = collections.defaultdict(list)
+    hashes_list = collections.defaultdict(list)
     for dir_name, subdir_list, file_list in os.walk(root_dir):
         for fname in file_list:
             fpath = os.path.join(dir_name, fname)
-            hash_sha256 = sha256(fpath)
-            hash_list[hash_sha256].append(fpath)
-    return list(filter(lambda entry: len(entry) > 1, hash_list.values()))
+            hash_sha256 = get_file_hash(fpath)
+            hashes_list[hash_sha256].append(fpath)
+    return list(filter(lambda entry: len(entry) > 1, hashes_list.values()))
 
 
 def configure_logging(args):
