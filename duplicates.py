@@ -1,6 +1,6 @@
 import os
 import hashlib
-import sys
+import collections
 import datetime
 import argparse
 import logging
@@ -16,10 +16,6 @@ def parse_args():
     return parser.parse_args()
 
 
-def path_join(dir, file):
-    return os.path.join(dir, file)
-
-
 def sha256(filepath):
     hash_sha256 = hashlib.sha256()
     with open(filepath, "rb") as file:
@@ -29,15 +25,12 @@ def sha256(filepath):
 
 
 def find_dups(root_dir):
-    hash_list = {}
+    hash_list = collections.defaultdict(list)
     for dir_name, subdir_list, file_list in os.walk(root_dir):
         for fname in file_list:
             fpath = os.path.join(dir_name, fname)
             hash_sha256 = sha256(fpath)
-            if hash_sha256 in hash_list:
-                hash_list[hash_sha256].append(fpath)
-            else:
-                hash_list[hash_sha256] = [fpath]
+            hash_list[hash_sha256].append(fpath)
     return list(filter(lambda entry: len(entry) > 1, hash_list.values()))
 
 
@@ -63,13 +56,12 @@ def log_duplicates(dups, args):
         print('Writing down to %s', args.logfile)
     if dups is None:
         logging.info('No duplicates found!')
-        sys.exit()
+        return None
     for paths in dups:
         logging.info('-----------------------')
         logging.info('These files are duplicates:')
         for path in paths:
             logging.info(path)
-    logging.info('Done!')
 
 
 if __name__ == '__main__':
